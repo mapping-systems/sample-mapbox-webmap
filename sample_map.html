@@ -68,7 +68,20 @@ body { margin: 0; padding: 0; }
                 });
 
                 map.on('click', 'restaurants-layer', (e)=> {
-                    console.log(e.features[0].properties);
+                    // console.log(e.features[0].properties);
+                    const { dba, grade, grade_date, inspection_date, violation_code, violation_description } = e.features[0].properties;
+                    const popupHtml = `
+                        <h3>${dba}</h3>
+                        <p>Grade: ${grade}</p>
+                        <p>Grade Date: ${grade_date}</p>
+                        <p>Inspection Date: ${inspection_date}</p>
+                        <p>Violation Code: ${violation_code}</p>
+                        <p>Violation Description: ${violation_description}</p>
+                    `;
+                    new mapboxgl.Popup()
+                        .setLngLat(e.features[0].geometry.coordinates)
+                        .setHTML(popupHtml)
+                        .addTo(map);
                 })
             });
         });

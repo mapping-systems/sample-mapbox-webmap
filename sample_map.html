@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Load data from an external GeoJSON file</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="config.js"></script>
+<script>
+	mapboxgl.accessToken = mapboxApiKey;
+    const map = new mapboxgl.Map({
+        container: 'map', // container ID
+        // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+        // style: 'mapbox://styles/mapbox/satellite-v9', // satellite url
+        // style: 'mapbox://styles/mapbox/streets-v11', // basic streets 
+        style: 'mapbox://styles/marioag/clzbybnep002n01p646zu2qpk', // modified streets
+        zoom: 14, // starting zoom
+        center: [-73.9604192, 40.8075803] // // starting center in [lng, lat]
+    });
+
+    map.on('style.load', () => {
+        map.setFog({}); // Set the default atmosphere style
+    });
+
+    const jsonData =  fetch('https://data.cityofnewyork.us/resource/43nn-pn8j.geojson?cuisine_description=Pizza&$limit=10000')
+        .then(response => response.json())
+        .then(data => {
+            // create geometry from the lat, lon properties
+            data.features.forEach(feature => {
+                feature.geometry = {
+                    type: 'Point',
+                    coordinates: [Number(feature.properties.longitude), Number(feature.properties.latitude)]
+                };
+            });            
+            map.on('load', () => {
+        
+                map.addSource('restaurants', {
+                    type: 'geojson',
+                    data: data
+                });
+
+                map.addLayer({
+                    'id': 'restaurants-layer',
+                    'type': 'circle',
+                    'source': 'restaurants',
+                    'paint': {
+                        'circle-radius': 6,
+                        'circle-stroke-width': 2,
+                        'circle-color': [
+                            'match',
+                            ['get', 'grade'],
+                            'A', '#00FF00',
+                            'B', '#FFFF00',
+                            'C', '#FFA500',
+                            'D', '#FF0000',
+                            /* other */ '#000000'
+                        ],
+                        'circle-stroke-color': 'white'
+                    }
+                });
+
+                map.on('click', 'restaurants-layer', (e)=> {
+                    console.log(e.features[0].properties);
+                })
+            });
+        });
+
+    
+</script>
+
+</body>
+</html>

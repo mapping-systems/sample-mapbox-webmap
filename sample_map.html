@@ -41,7 +41,7 @@ body { margin: 0; padding: 0; }
     );
 
 
-    const jsonData =  fetch('https://data.cityofnewyork.us/resource/43nn-pn8j.geojson?cuisine_description=Pizza&$limit=${}')
+    const jsonData =  fetch('https://data.cityofnewyork.us/resource/43nn-pn8j.geojson?cuisine_description=Pizza&$limit=10000')
         .then(response => response.json())
         .then(data => {
             // create geometry from the lat, lon properties

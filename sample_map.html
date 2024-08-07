@@ -10,6 +10,8 @@
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 </style>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.3.1/mapbox-gl-directions.js"></script>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.3.1/mapbox-gl-directions.css" type="text/css">
 </head>
 <body>
 <div id="map"></div>
@@ -28,9 +30,18 @@ body { margin: 0; padding: 0; }
 
     map.on('style.load', () => {
         map.setFog({}); // Set the default atmosphere style
+        
     });
 
-    const jsonData =  fetch('https://data.cityofnewyork.us/resource/43nn-pn8j.geojson?cuisine_description=Pizza&$limit=10000')
+    map.addControl(
+        new MapboxDirections({
+            accessToken: mapboxgl.accessToken
+        }),
+        'top-left'
+    );
+
+
+    const jsonData =  fetch('https://data.cityofnewyork.us/resource/43nn-pn8j.geojson?cuisine_description=Pizza&$limit=${}')
         .then(response => response.json())
         .then(data => {
             // create geometry from the lat, lon properties
@@ -54,19 +65,19 @@ body { margin: 0; padding: 0; }
                     'paint': {
                         'circle-radius': 6,
                         'circle-stroke-width': 2,
-                        'circle-color': [
-                            'match',
-                            ['get', 'grade'],
-                            'A', '#00FF00',
-                            'B', '#FFFF00',
-                            'C', '#FFA500',
-                            'D', '#FF0000',
+                        'circle-color': [                                            
+                        'match',
+                            ['get', 'score'],
+                            '1', '#00FF00',
+                            '2', '#FFFF00',
+                            '3', '#FFA500',
+                            '4', '#FF0000',
                             /* other */ '#000000'
                         ],
                         'circle-stroke-color': 'white'
                     }
                 });
-
+                console.log(map.getStyle())
                 map.on('click', 'restaurants-layer', (e)=> {
                     // console.log(e.features[0].properties);
                     const { dba, grade, grade_date, inspection_date, violation_code, violation_description } = e.features[0].properties;
@@ -78,6 +89,19 @@ body { margin: 0; padding: 0; }
                         <p>Violation Code: ${violation_code}</p>
                         <p>Violation Description: ${violation_description}</p>
                     `;
+
+                    // get coordinates
+                    // coords = e.features[0].geometry.coordinates.slice();
+                     // request url
+                    // const url = `https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${coords[0]},${coords[1]}/&fov=80&heading=70&pitch=0&key=AIzaSyCIHVy5bmgfgUYd-3Qgzd1Tqj4D3o2pd7U`;
+                    // fetch*(url)
+                    //     .then(response => response.blob())
+                    //     .then(blob => {
+                    //         const imageUrl = URL.createObjectURL(blob);
+                    //         console.log(imageUrl);
+                    //     });
+                    // create the popup
+                    
                     new mapboxgl.Popup()
                         .setLngLat(e.features[0].geometry.coordinates)
                         .setHTML(popupHtml)
